@@ -62,3 +62,5 @@
 (wgo 2 1)
 
 
+(def acq (.getAcquisitionEngine gui))
+
