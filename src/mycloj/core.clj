@@ -20,10 +20,45 @@
 
 (load-mm (MMStudioMainFrame/getInstance))
 
-(core setSerialPortCommand "COM3" "SVA?" "\r")
-(map
-  (fn [ign] (core getSerialPortAnswer "COM3" "\n"))
-  (take 3 (iterate inc 1)))
 
+(defn try-scanner-read-line []
+  (try
+    (core getSerialPortAnswer "COM3" "\n")
+    (catch java.lang.Exception e)))
+
+(defn read-scanner []
+  (map
+    (fn [ign] (try-scanner-read-line))
+    (take 3 (iterate inc 1))))
+  
+(defn sva? [] 
+  "check position of the 3 axis piezo stage"
+  (core setSerialPortCommand "COM3" "SVA?" "\r")
+  (read-scanner))
+
+(while (try-scanner-read-line))
+
+
+(core setSerialPortCommand "COM3"
+      "WGO 2 0\rWAV 1 X SIN 1 100 10 100 0 0 25\rWGO 2 1"
+      "\r")
+(try-scanner-read-line)
+
+
+(defn talk-scanner [cmd]
+  (core setSerialPortCommand "COM3" cmd "\r"))
+
+(defn wgo? [] 
+  (talk-scanner "WGO?")
+  (read-scanner))
+
+(defn wgo [n state] 
+  (talk-scanner (format "WGO %d %d" n state)))
+
+(wgo?)
+
+(wgo 1 1)
+
+(wgo 2 1)
 
 
